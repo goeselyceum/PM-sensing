@@ -26,6 +26,10 @@ void setup() {
 
   Serial.begin(9600);
   rtc.begin();
+
+  // following line sets the RTC to the date & time this sketch was compiled
+  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+
   bme.begin();
   delay(2000);
 
@@ -57,8 +61,8 @@ void setup() {
   }
   Serial.println("card initialized.");
   delay(100);
-  
-  
+
+
   File dataFile = SD.open("pmlog.txt", FILE_WRITE);
   if (dataFile) {
     dataFile.print("datum");// Writing column headers voor data-export Excel
@@ -107,7 +111,7 @@ void loop() {
   if (ret < 0) {
     Serial.print("error reading measurement\n");
   } else {
-    #ifdef DEBUG
+#ifdef DEBUG
     Serial.print("NC  2.5: "); // print values from SPS30,  BME280
     Serial.println(m.nc_2p5);
     Serial.print("NC 10.0: ");
@@ -123,11 +127,11 @@ void loop() {
     Serial.println(now.second(), DEC);
 
     Serial.println();
-    #endif
+#endif
   }
 
   //check if a second has elapsed, otherwise data is logged during a complete second
-  if (seconds == logSeconds + 1)  { 
+  if (seconds == logSeconds + 1)  {
     logFlag = true;
   }
 
@@ -157,9 +161,9 @@ void loop() {
       dataFile.close();
       logFlag = false;
       logSeconds = now.second();
-      
+      #ifdef DEBUG
       Serial.println("Logged");
-      
+      #endif
     }
     // if the file isn't open, pop up an error:
     else {
