@@ -8,7 +8,7 @@
 #include <SD.h>
 
 
-//#define DEBUG . // uncomment this line to turn on Serial.print
+//#define DEBUG //uncomment this line to turn on Serial.print
 
 
 RTC_DS1307 rtc;
@@ -60,7 +60,7 @@ void setup() {
     while (1);
   }
   Serial.println("card initialized.");
-  delay(100);
+  delay(100);  //wait to finish initialisation
 
 
   File dataFile = SD.open("pmlog.txt", FILE_WRITE);
