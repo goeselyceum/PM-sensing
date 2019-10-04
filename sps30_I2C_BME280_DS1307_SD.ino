@@ -113,9 +113,9 @@ void loop() {
   } else {
 #ifdef DEBUG
     Serial.print("NC  2.5: "); // print values from SPS30,  BME280
-    Serial.println(m.nc_2p5);
+    Serial.println(m.mc_2p5);
     Serial.print("NC 10.0: ");
-    Serial.println(m.nc_10p0);
+    Serial.println(m.mc_10p0);
 
     Serial.print("Temperature = ");
     Serial.print(bme.readTemperature());
