@@ -9,3 +9,5 @@ Gebruikte hardware:
 
 De .dxf bestanden zijn voor het lasersnijden van het chassis voor de arduino en sensorenDeze vind je in de map chassis.
 
+PMlog bevat een voorbeeld van meetgevens. LET OP het is een tekstbestan. HEt decimaalteken is een punt(.) Eerst vervangen door een komma voordat je importeert in Excel. Na het ophalen van de externe gegevens alsnog de betreffende kolommen het kenmerk getal meegegeven.
+
