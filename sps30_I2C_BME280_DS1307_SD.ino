@@ -8,7 +8,7 @@
 #include <SD.h>
 
 
-//#define DEBUG //uncomment this line to turn on Serial.print
+#define DEBUG //comment this line to turn off Serial.print
 
 
 RTC_DS1307 rtc;
