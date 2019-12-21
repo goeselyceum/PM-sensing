@@ -1,5 +1,5 @@
 // Sketch, based on https://github.com/Sensirion/embedded-sps/blob/master/sps30-i2c/sps30_example_usage.c
-
+#include <Wire.h>
 #include <sps30.h> 
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
