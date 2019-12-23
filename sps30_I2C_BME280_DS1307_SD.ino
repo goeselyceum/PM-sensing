@@ -27,8 +27,11 @@ void setup() {
   Serial.begin(9600);
   rtc.begin();
 
-  // following line sets the RTC to the date & time this sketch was compiled
-  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  if (! rtc.isrunning()) {
+    Serial.println("RTC is NOT running!");
+    // following line sets the RTC to the date & time this sketch was compiled
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)))
+  }
 
   bme.begin();
   delay(2000);
