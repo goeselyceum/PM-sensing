@@ -158,9 +158,9 @@ void loop() {
       dataFile.print(";");
       dataFile.print(bme.readHumidity());
       dataFile.print(";");
-      dataFile.print(m.nc_2p5);
+      dataFile.print(m.mc_2p5);
       dataFile.print(";");
-      dataFile.println(m.nc_10p0);
+      dataFile.println(m.mc_10p0);
       dataFile.close();
       logFlag = false;
       logSeconds = now.second();
