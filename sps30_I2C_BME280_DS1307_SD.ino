@@ -1,8 +1,8 @@
 // Sketch, based on https://github.com/Sensirion/embedded-sps/blob/master/sps30-i2c/sps30_example_usage.c
 #include <Wire.h>
 #include <sps30.h>            //I2C adress = 0x69
-#include <Adafruit_Sensor.h>  //I2C adress = 0x76
-#include <Adafruit_BME280.h>
+#include <Adafruit_Sensor.h>  
+#include <Adafruit_BME280.h>  //I2C adress = 0x76 in case of a GYBMEP sensor
 #include "RTClib.h"           //I2C adress = 0x68
 #include <SPI.h>
 #include <SD.h>               
