@@ -20,9 +20,9 @@ int logSeconds = 0;
 int seconds = 0;
 
 void setup() {
-  s16 ret;
-  u8 auto_clean_days = 4;
-  u32 auto_clean;
+  int16_t ret;
+  uint8_t auto_clean_days = 4;
+  uint32_t auto_clean;
 
   Serial.begin(9600);
   rtc.begin();
@@ -91,9 +91,9 @@ void setup() {
 
 void loop() {
   struct sps30_measurement m;
-  char serial[SPS_MAX_SERIAL_LEN];
-  u16 data_ready;
-  s16 ret;
+  char serial[SPS30_MAX_SERIAL_LEN];
+  uint16_t data_ready;
+  int16_t ret;
 
   DateTime now = rtc.now(); //take a readig from the RTC
   seconds = now.second(); //store seconds in a variable for timing datalogging
