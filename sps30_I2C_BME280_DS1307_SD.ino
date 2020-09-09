@@ -115,9 +115,9 @@ void loop() {
     Serial.print("error reading measurement\n");
   } else {
 #ifdef DEBUG
-    Serial.print("MC  2.5: "); // print values from SPS30,  BME280
+    Serial.print("PM  2.5: "); // print values from SPS30,  BME280
     Serial.println(m.mc_2p5);
-    Serial.print("MC 10.0: ");
+    Serial.print("PM 10.0: ");
     Serial.println(m.mc_10p0);
 
     Serial.print("Temperature = ");
