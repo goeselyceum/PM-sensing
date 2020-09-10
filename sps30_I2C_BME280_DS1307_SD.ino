@@ -126,9 +126,12 @@ void loop() {
     Serial.print("Humidity = ");
     Serial.print(bme.readHumidity());
     Serial.println(" %");
-    Serial.print("Seconds: ");
+    Serial.print(now.hour(), DEC);
+    Serial.print(":");
+    Serial.print(now.minute(), DEC);
+    Serial.print(":");
     Serial.println(now.second(), DEC);
-
+    
     Serial.println();
 #endif
   }
