@@ -33,7 +33,7 @@ void setup() {
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
 
-  bme.begin();
+  bme.begin(0x76);
   delay(2000);
 
   while (sps30_probe() != 0) {
