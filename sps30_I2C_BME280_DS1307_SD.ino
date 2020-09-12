@@ -1,17 +1,17 @@
 // Sketch, based on https://github.com/Sensirion/embedded-sps/blob/master/sps30-i2c/sps30_example_usage.c
 #include <Wire.h>
-#include <sps30.h>            //I2C adress = 0x69
+#include <sps30.h>            //I2C adress 0x69
 #include <Adafruit_Sensor.h>  
-#include <Adafruit_BME280.h>  //I2C adress = 0x76 in case of a GYBMEP sensor
-#include "RTClib.h"           //I2C adress = 0x68
+#include <Adafruit_BME280.h>  //I2C adress 0x77 in case of Adafruit (blue) or Sparkfun (red)sensor
+                              //I2C adress 0x76 in case of a GYBMEP sensor (purple)
+#include "RTClib.h"           //I2C adress 0x68
 #include <SPI.h>
-#include <SD.h>               
-
+#include <SD.h>
 
 #define DEBUG //comment this line to turn off Serial.print
 
-
 RTC_DS1307 rtc;
+
 Adafruit_BME280 bme; // I2C
 
 bool logFlag = true;
@@ -26,14 +26,14 @@ void setup() {
 
   Serial.begin(9600);
   rtc.begin();
-
-  if (! rtc.isrunning()) {
+    if (! rtc.isrunning()) {
     Serial.println("RTC is NOT running!");
     // following line sets the RTC to the date & time this sketch was compiled
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
 
-  bme.begin(0x76);
+  bme.begin();        // for Adafruit or Sparkfun sensors
+  //bme.begin(0x76);  // for GYBMEP sensor
   delay(2000);
 
   while (sps30_probe() != 0) {
@@ -95,6 +95,7 @@ void loop() {
   uint16_t data_ready;
   int16_t ret;
 
+
   DateTime now = rtc.now(); //take a readig from the RTC
   seconds = now.second(); //store seconds in a variable for timing datalogging
 
@@ -119,19 +120,18 @@ void loop() {
     Serial.println(m.mc_2p5);
     Serial.print("PM 10.0: ");
     Serial.println(m.mc_10p0);
-
     Serial.print("Temperature = ");
     Serial.print(bme.readTemperature());
     Serial.println(" *C");
     Serial.print("Humidity = ");
     Serial.print(bme.readHumidity());
     Serial.println(" %");
+    Serial.print("Tijd: ");
     Serial.print(now.hour(), DEC);
     Serial.print(":");
     Serial.print(now.minute(), DEC);
     Serial.print(":");
     Serial.println(now.second(), DEC);
-    
     Serial.println();
 #endif
   }
@@ -141,7 +141,7 @@ void loop() {
     logFlag = true;
   }
 
-  // logging happens here
+  // logging happens here every minute
   if (seconds == 0 && logFlag == true) {
     File dataFile = SD.open("pmlog.txt", FILE_WRITE);
 
