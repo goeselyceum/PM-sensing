@@ -35,6 +35,8 @@ void setup() {
   //bme.begin(0x76);  // for GYBMEP sensor
   delay(2000);
 
+  sensirion_i2c_init();
+  
   while (sps30_probe() != 0) {
     Serial.print("SPS sensor probing failed\n");
     delay(500);
