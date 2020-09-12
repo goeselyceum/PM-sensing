@@ -123,7 +123,7 @@ void loop() {
     Serial.println(m.mc_10p0);
     Serial.print("Temperature = ");
     Serial.print(bme.readTemperature());
-    Serial.println(" *C");
+    Serial.println("*C");
     Serial.print("Humidity = ");
     Serial.print(bme.readHumidity());
     Serial.println("%");
