@@ -126,7 +126,7 @@ void loop() {
     Serial.println(" *C");
     Serial.print("Humidity = ");
     Serial.print(bme.readHumidity());
-    Serial.println(" %");
+    Serial.println("%");
     Serial.print("Tijd: ");
     Serial.print(now.hour(), DEC);
     Serial.print(":");
