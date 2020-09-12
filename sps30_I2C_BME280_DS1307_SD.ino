@@ -21,7 +21,7 @@ int seconds = 0;
 
 void setup() {
   int16_t ret;
-  uint8_t auto_clean_seconds = 600; //clean fan every 10 minutes
+  uint8_t auto_clean_seconds = 900; //clean fan every 15 minutes
 
   Serial.begin(9600);
   rtc.begin();
