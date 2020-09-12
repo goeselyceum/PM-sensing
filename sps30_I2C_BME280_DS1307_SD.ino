@@ -70,15 +70,15 @@ void setup() {
   File dataFile = SD.open("pmlog.txt", FILE_WRITE);
   if (dataFile) {
     dataFile.print("datum");// Writing column headers voor data-export Excel
-    dataFile.print(";");
+    dataFile.print(",");
     dataFile.print("tijd");
-    dataFile.print(";");
+    dataFile.print(",");
     dataFile.print("temp");
-    dataFile.print(";");
+    dataFile.print(",");
     dataFile.print("hum");
-    dataFile.print(';');
+    dataFile.print(',');
     dataFile.print("PM2.5");
-    dataFile.print(";");
+    dataFile.print(",");
     dataFile.println("PM10");
     dataFile.close();
     Serial.println("Wrote headers");
@@ -153,17 +153,17 @@ void loop() {
       dataFile.print(now.month(), DEC);
       dataFile.print('/');
       dataFile.print(now.year(), DEC);
-      dataFile.print(";");
+      dataFile.print(",");
       dataFile.print(now.hour(), DEC);
       dataFile.print(':');
       dataFile.print(now.minute(), DEC);
-      dataFile.print(";");
+      dataFile.print(",");
       dataFile.print(bme.readTemperature());
-      dataFile.print(";");
+      dataFile.print(",");
       dataFile.print(bme.readHumidity());
-      dataFile.print(";");
+      dataFile.print(",");
       dataFile.print(m.mc_2p5);
-      dataFile.print(";");
+      dataFile.print(",");
       dataFile.println(m.mc_10p0);
       dataFile.close();
       logFlag = false;
