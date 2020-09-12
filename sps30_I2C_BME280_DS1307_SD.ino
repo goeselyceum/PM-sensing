@@ -2,7 +2,7 @@
 #include <Wire.h>
 #include <sps30.h>            //I2C adress 0x69
 #include <Adafruit_Sensor.h>  
-#include <Adafruit_BME280.h>  //I2C adress 0x77 in case of Adafruit (blue) or Sparkfun (red)sensor
+#include <Adafruit_BME280.h>  //I2C adress 0x77 in case of Adafruit (blue) or Sparkfun (red) sensor
                               //I2C adress 0x76 in case of a GYBMEP sensor (purple)
 #include "RTClib.h"           //I2C adress 0x68
 #include <SPI.h>
@@ -21,8 +21,7 @@ int seconds = 0;
 
 void setup() {
   int16_t ret;
-  uint8_t auto_clean_days = 4;
-  uint32_t auto_clean;
+  uint8_t auto_clean_seconds = 600; //clean fan every 10 minutes
 
   Serial.begin(9600);
   rtc.begin();
@@ -43,7 +42,7 @@ void setup() {
 
   Serial.print("SPS sensor probing successful\n");
 
-  ret = sps30_set_fan_auto_cleaning_interval_days(auto_clean_days);
+  ret = sps30_set_fan_auto_cleaning_interval(auto_clean_seconds);
   if (ret) {
     Serial.print("error setting the auto-clean interval: ");
     Serial.println(ret);
