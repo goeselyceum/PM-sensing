@@ -2,7 +2,7 @@
 #include <Wire.h>
 #include <sps30.h>            //I2C adress 0x69
 #include <Adafruit_Sensor.h>  
-#include <Adafruit_BME280.h>  //I2C adress 0x77 in case of Adafruit (blue) or Sparkfun (red) sensor
+#include <Adafruit_BME280.h>  //I2C adress 0x77 in case of Adafruit (blue) or Sparkfun (red)sensor
                               //I2C adress 0x76 in case of a GYBMEP sensor (purple)
 #include "RTClib.h"           //I2C adress 0x68
 #include <SPI.h>
@@ -21,8 +21,8 @@ int seconds = 0;
 
 void setup() {
   int16_t ret;
-  uint8_t auto_clean_seconds = 9000; //clean fan every 15 minutes, value is in millis!
-
+  uint16_t auto_clean_seconds = 900; //15 minute interval
+  
   Serial.begin(9600);
   rtc.begin();
     if (! rtc.isrunning()) {
@@ -31,12 +31,12 @@ void setup() {
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
 
-  bme.begin();        // for Adafruit or Sparkfun sensors
-  //bme.begin(0x76);  // for GYBMEP sensor
+  //bme.begin();        // for Adafruit or Sparkfun sensors
+  bme.begin(0x76);  // for GYBMEP sensor
   delay(2000);
 
   sensirion_i2c_init();
-  
+
   while (sps30_probe() != 0) {
     Serial.print("SPS sensor probing failed\n");
     delay(500);
