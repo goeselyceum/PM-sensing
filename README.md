@@ -9,7 +9,7 @@ Gebruikte hardware:
 
 De .dxf bestanden zijn voor het lasersnijden van het chassis voor de arduino en sensoren. Deze vind je in de map chassis.
 
-PMlog bevat een voorbeeld van meetgevens. LET OP het is een tekstbestand. Het decimaalteken is een punt(.) Eerst vervangen door een komma voordat je importeert in Excel. Na het ophalen van de externe gegevens alsnog de betreffende kolommen het kenmerk getal meegegeven.
+PMlog.txt bevat een voorbeeld van meetgevens zoals deze worden opgeslagen op de SD kaart. LET OP het is een tekstbestand. Het decimaalteken is een punt(.) Eerst vervangen door een komma voordat je importeert in Excel. Dat scheelt een hoop gedoe. Na het ophalen van de externe gegevens alsnog de betreffende kolommen het kenmerk getal meegegeven (hum, temp, PM2.5 en PM10).
 Het veldscheidingsteken is een puntkomma(;).
 
 Functionaliteit:
@@ -17,4 +17,4 @@ Functionaliteit:
   - meet temperatuur en luchtvochtigheid
   - slaat iedere minuut deze gegevens op in een "," gescheiden .txt bestand
   - toont debug info via de seriele monitor
-  - auto-cleaning van de SPS30 ventilator instalebaar via software
+  - auto-cleaning functie van de SPS30 ventilator instalebaar via software
