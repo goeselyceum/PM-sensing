@@ -1,0 +1,14 @@
+PINout
+ESP32         GPS
+RX2           TX
+TX2           RX
+
+              SPS30
+D21           SDA
+D22           SCL
+
+              Sd breakout
+D23           MOSI
+D19           MISO
+D18           SCK
+D05           CS
