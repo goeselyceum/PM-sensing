@@ -6,11 +6,13 @@
 
 TinyGPSPlus gps;
 
+
 unsigned long previousMillis = 0;
 
 void setup() {
   Serial.begin(115200);
   Serial2.begin(9600);
+
   if (!SD.begin()) {
     Serial.println("Card Mount Failed");
     return;
@@ -22,8 +24,19 @@ void setup() {
     return;
   }
 
-  Serial.printf("Total space: %lluMB\n", SD.totalBytes() / (1024 * 1024));
-  Serial.printf("Used space: %lluMB\n", SD.usedBytes() / (1024 * 1024));
+  Serial.print("SD Card Type: ");
+  if (cardType == CARD_MMC) {
+    Serial.println("MMC");
+  } else if (cardType == CARD_SD) {
+    Serial.println("SDSC");
+  } else if (cardType == CARD_SDHC) {
+    Serial.println("SDHC");
+  } else {
+    Serial.println("UNKNOWN");
+  }
+  uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+  Serial.printf("SD Card Size: %lluMB\n", cardSize);
+  delay(2000);
 
   // SPS30
   int16_t ret;
@@ -46,20 +59,35 @@ void setup() {
   if (ret < 0) {
     Serial.print("error starting measurement\n");
   }
-  Serial.print("measurements started\n");
+  Serial.print("Measurements started\n");
+  delay(2000);
+  String dataString;
+  dataString += ("lat");
+  dataString += ",";
+  dataString += ("lng");
+  dataString += ",";
+  dataString += ("date");
+  dataString += ",";
+  dataString += ("time");
+  dataString += ",";
+  dataString += ("PM2.5");
+  dataString += (",");
+  dataString += ("PM10");
+  dataString += "\r\n";
+  Serial.println(dataString);
+  writeFile(SD, "/data.txt", dataString.c_str());
   delay(2000);
 }
 
 void loop() {
   while (Serial2.available() > 0)
     if (gps.encode(Serial2.read()))
-      displayInfo();
+      //displayInfo();
 
-  if (millis() > 5000 && gps.charsProcessed() < 10)
-  {
-    Serial.println(F("No GPS detected: check wiring."));
-    while (true);
-  }
+      if (millis() > 5000 && gps.charsProcessed() < 10) {
+        Serial.println(F("No GPS detected: check wiring."));
+        while (true);
+      }
 
 
   if (millis() - previousMillis >= 1000) {
@@ -91,25 +119,34 @@ void loop() {
       Serial.print("PM 10.0: ");
       Serial.println(m.mc_10p0);
       Serial.println();
-    }  
+      displayInfo();
+    }
 
     if (gps.time.second() % 30 == 0) {
-      Serial.println("Logging");
-      Serial.println();
-      File dataFile = SD.open("gpslog.txt", FILE_WRITE);
-      dataFile.print(gps.location.lat(), 6);
-      dataFile.print(F(","));
-      dataFile.print(gps.location.lng(), 6);
-      dataFile.print(gps.date.day());
-      dataFile.print(F("/"));
-      dataFile.print(gps.date.month());
-      dataFile.print(F("/"));
-      dataFile.print(gps.date.year());
-      dataFile.print(F(","));
-      dataFile.print(m.mc_2p5);
-      dataFile.print(F(","));
-      dataFile.println(m.mc_10p0);
-      dataFile.close();
+        String dataString;
+        dataString += String(gps.location.lat(), 6);
+        dataString += ",";
+        dataString += String(gps.location.lng(), 6);
+        dataString += ",";
+        dataString += gps.date.day();
+        dataString += "/";
+        dataString += gps.date.month();
+        dataString += "/";
+        dataString += gps.date.year();
+        dataString += ",";
+        dataString += gps.time.hour();
+        dataString += ":";
+        dataString += gps.time.minute();
+        dataString += ",";
+        dataString += m.mc_2p5;
+        dataString += ",";
+        dataString += m.mc_10p0;
+        dataString += "\r\n";
+        appendFile(SD, "/data.txt", dataString.c_str());
+        Serial.println();
+        Serial.println(dataString);
+        Serial.println();
+      
     }
   }
 }
@@ -161,4 +198,37 @@ void displayInfo()
   }
 
   Serial.println();
+}
+
+void writeFile(fs::FS & fs, const char * path, const char * message) {
+  Serial.printf("Writing file: %s\n", path);
+
+  File file = fs.open(path, FILE_WRITE);
+  if (!file) {
+    Serial.println("Failed to open file for writing");
+    return;
+  }
+  if (file.print(message)) {
+    Serial.println("File written");
+  } else {
+    Serial.println("Write failed");
+  }
+  file.close();
+}
+
+void appendFile(fs::FS & fs, const char * path, const char * message) {
+  Serial.printf("Appending to file: %s\n", path);
+
+  File file = fs.open(path, FILE_APPEND);
+  if (!file) {
+    Serial.println("Failed to open file for appending");
+    return;
+  }
+  if (file.print(message)) {
+    Serial.println("Data appended");
+    Serial.println();
+  } else {
+    Serial.println("Append failed");
+  }
+  file.close();
 }
