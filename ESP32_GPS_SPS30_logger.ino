@@ -1,10 +1,72 @@
+
+#include <Arduino.h>
 #include "FS.h"
 #include "SD.h"
 #include "SPI.h"
 #include <TinyGPS++.h>
 #include <sps30.h>
+#include <RTClib.h>
+#include <U8g2lib.h>
+
+#ifdef U8X8_HAVE_HW_SPI
+#include <SPI.h>
+#endif
+#ifdef U8X8_HAVE_HW_I2C
+#include <Wire.h>
+#endif
 
 TinyGPSPlus gps;
+
+RTC_DS1307 rtc;
+
+U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+#define PONTES_logo_width 61
+#define PONTES_logo_height 64
+static const unsigned char PONTES_logo_bits[] PROGMEM = {
+  0x00, 0x00, 0x00, 0x00, 0xfc, 0x7f, 0x00, 0x00, 0x00, 0x00, 0x00, 0xe0,
+  0xff, 0xff, 0x3f, 0x00, 0x00, 0x00, 0x00, 0xfc, 0xff, 0xff, 0xff, 0x01,
+  0x00, 0x00, 0x80, 0xff, 0xff, 0xff, 0xff, 0x1f, 0x00, 0x00, 0xe0, 0xff,
+  0xff, 0xff, 0xff, 0x1f, 0x00, 0x00, 0xf8, 0xff, 0xff, 0xff, 0xff, 0x1f,
+  0x00, 0x00, 0xfc, 0x7f, 0x00, 0xe0, 0xff, 0x1f, 0x00, 0x00, 0xff, 0x01,
+  0x00, 0x00, 0xf8, 0x1f, 0x00, 0x80, 0x7f, 0x00, 0x00, 0x00, 0x80, 0x1f,
+  0x00, 0xc0, 0x1f, 0x00, 0x00, 0x00, 0x00, 0x1c, 0x00, 0xc0, 0x07, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0xc0, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x40, 0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8,
+  0x1f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfc, 0x3f, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0xfe, 0x7f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfe,
+  0xff, 0x80, 0x00, 0x00, 0x00, 0x00, 0x3c, 0x3f, 0xfe, 0xf8, 0x07, 0x00,
+  0x00, 0x00, 0xff, 0x1f, 0xfc, 0xff, 0x3f, 0x00, 0x00, 0x80, 0xff, 0x0f,
+  0xf8, 0xff, 0x7f, 0x00, 0x00, 0x80, 0xff, 0x07, 0xf0, 0xff, 0xff, 0x00,
+  0x00, 0xc0, 0xff, 0x07, 0xf0, 0xff, 0xff, 0x01, 0x00, 0xc0, 0xe3, 0x07,
+  0xf0, 0xff, 0xff, 0x03, 0x00, 0xc0, 0xc1, 0x07, 0xf0, 0x0f, 0xfe, 0x07,
+  0x00, 0xc0, 0x81, 0x07, 0xf0, 0x07, 0xf8, 0x07, 0x00, 0xc0, 0x80, 0x07,
+  0xf0, 0x03, 0xf0, 0x0f, 0x00, 0xc0, 0x00, 0x07, 0xf0, 0x03, 0xf0, 0x0f,
+  0x00, 0xc0, 0x00, 0x07, 0xf0, 0x03, 0xe0, 0x0f, 0x00, 0xc0, 0x00, 0x07,
+  0xf0, 0x03, 0xe0, 0x0f, 0x00, 0xc0, 0x00, 0x07, 0xf0, 0x03, 0xe0, 0x1f,
+  0x00, 0xc0, 0x00, 0x07, 0xf0, 0x03, 0xe0, 0x1f, 0x00, 0xc0, 0x00, 0x07,
+  0xf0, 0x03, 0xe0, 0x1f, 0x00, 0x00, 0x00, 0x07, 0xf0, 0x03, 0xe0, 0x1f,
+  0x00, 0x00, 0x00, 0x07, 0xf0, 0x03, 0xe0, 0x1f, 0x00, 0x00, 0x00, 0x00,
+  0xf0, 0x03, 0xe0, 0x1f, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x03, 0xe0, 0x1f,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xe0, 0x1f, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0xe0, 0x1f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xe0, 0x1f,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1c, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3f, 0x7c, 0x18, 0xf6,
+  0xcf, 0x8f, 0x1f, 0x00, 0x3f, 0xfe, 0x38, 0xe6, 0xcf, 0xcf, 0x09, 0x00,
+  0x63, 0xc3, 0x39, 0x86, 0xc1, 0xc0, 0x01, 0x00, 0x73, 0x83, 0x79, 0x86,
+  0xc1, 0x87, 0x03, 0x00, 0x3f, 0x83, 0xd9, 0x87, 0xc1, 0x8f, 0x0f, 0x00,
+  0x1f, 0x83, 0x99, 0x87, 0xc1, 0x00, 0x1c, 0x00, 0x03, 0xc7, 0x99, 0x87,
+  0xc1, 0x00, 0x18, 0x00, 0x03, 0xfe, 0x18, 0x87, 0xc1, 0xdf, 0x1d, 0x00,
+  0x03, 0x7c, 0x18, 0x86, 0xc1, 0xdf, 0x0f, 0x00
+};
 
 
 unsigned long previousMillis = 0;
@@ -12,6 +74,56 @@ unsigned long previousMillis = 0;
 void setup() {
   Serial.begin(115200);
   Serial2.begin(9600);
+  u8g2.setBusClock(100000);
+  u8g2.begin();
+  u8g2.clearBuffer();          // clear the internal memory
+  u8g2.setFont(u8g2_font_courR10_tr);
+  u8g2.drawXBMP( 67, 0, PONTES_logo_width, PONTES_logo_height, PONTES_logo_bits);
+  u8g2.drawStr(0, 28, "FIJNSTOF");
+  u8g2.drawStr(8, 40, "LOGGER");
+  u8g2.sendBuffer();          // transfer internal memory to the display
+  delay(5000); u8g2.clearBuffer();         // clear the internal memory
+  u8g2.setFont(u8g2_font_courR08_tr);
+  u8g2.drawStr(0, 8, "Idee en realisatie:");
+  u8g2.drawStr(0, 22, "Klaas Groot");
+  u8g2.drawStr(0, 32, "Diane Robyn");
+  u8g2.drawStr(0, 42, "Jan Barten");
+  u8g2.sendBuffer();          // transfer internal memory to the display
+  delay(5000);
+
+  // SPS30
+  int16_t ret;
+  uint32_t auto_clean;
+  sensirion_i2c_init();
+
+  while (sps30_probe() != 0) {
+    Serial.println("SPS sensor probing failed");
+    delay(500);
+  }
+  Serial.print("SPS sensor probing successful\n");
+  ret = sps30_set_fan_auto_cleaning_interval(3000); // cleaning interval in seconds
+  if (ret) {
+    Serial.print("error setting the auto-clean interval: ");
+    Serial.println(ret);
+  }
+
+  ret = sps30_start_measurement();
+  if (ret < 0) {
+    Serial.print("error starting measurement\n");
+  }
+  Serial.print("Measurements started\n");
+
+  if (! rtc.begin()) {
+    Serial.println("Couldn't find RTC");
+    Serial.flush();
+    abort();
+  }
+
+  if (! rtc.isrunning()) {
+    Serial.println("RTC is NOT running, let's set the time!");
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  }
+  Serial.println("RTC ok!");
 
   if (!SD.begin()) {
     Serial.println("Card Mount Failed");
@@ -24,47 +136,12 @@ void setup() {
     return;
   }
 
-  Serial.print("SD Card Type: ");
-  if (cardType == CARD_MMC) {
-    Serial.println("MMC");
-  } else if (cardType == CARD_SD) {
-    Serial.println("SDSC");
-  } else if (cardType == CARD_SDHC) {
-    Serial.println("SDHC");
-  } else {
-    Serial.println("UNKNOWN");
-  }
-  uint64_t cardSize = SD.cardSize() / (1024 * 1024);
-  Serial.printf("SD Card Size: %lluMB\n", cardSize);
-  delay(2000);
-
-  // SPS30
-  int16_t ret;
-  uint8_t auto_clean_days = 4;
-  uint32_t auto_clean;
-  sensirion_i2c_init();
-
-  while (sps30_probe() != 0) {
-    Serial.print("SPS sensor probing failed\n");
-    delay(500);
-  }
-  Serial.print("SPS sensor probing successful\n");
-  ret = sps30_set_fan_auto_cleaning_interval_days(auto_clean_days);
-  if (ret) {
-    Serial.print("error setting the auto-clean interval: ");
-    Serial.println(ret);
-  }
-
-  ret = sps30_start_measurement();
-  if (ret < 0) {
-    Serial.print("error starting measurement\n");
-  }
-  Serial.print("Measurements started\n");
+  Serial.println("SD ok!");
   delay(2000);
   String dataString;
   dataString += ("lat");
   dataString += ",";
-  dataString += ("lng");
+  dataString += ("long");
   dataString += ",";
   dataString += ("date");
   dataString += ",";
@@ -74,21 +151,20 @@ void setup() {
   dataString += (",");
   dataString += ("PM10");
   dataString += "\r\n";
+  Serial.print("Gonna log: ");
   Serial.println(dataString);
-  writeFile(SD, "/data.txt", dataString.c_str());
+  appendFile(SD, "/data.txt", dataString.c_str());
   delay(2000);
 }
 
 void loop() {
+  DateTime now = rtc.now();
   while (Serial2.available() > 0)
     if (gps.encode(Serial2.read()))
-      //displayInfo();
-
       if (millis() > 5000 && gps.charsProcessed() < 10) {
         Serial.println(F("No GPS detected: check wiring."));
         while (true);
       }
-
 
   if (millis() - previousMillis >= 1000) {
     previousMillis = millis();
@@ -106,7 +182,7 @@ void loop() {
         Serial.print("data not ready, no new measurement available\n");
       else
         break;
-      delay(100); /* retry in 100ms */
+      delay(200); /* retry in 100ms */
     } while (1);
 
     ret = sps30_read_measurement(&m);
@@ -119,56 +195,67 @@ void loop() {
       Serial.print("PM 10.0: ");
       Serial.println(m.mc_10p0);
       Serial.println();
+      u8g2.clearBuffer();          // clear the internal memory
+      u8g2.setFont(u8g2_font_courR14_tr); // choose a suitable font
+      u8g2.drawStr(0, 18, "PM2.5:"); // write something to the internal memory
+      u8g2.setCursor(64, 18);
+      u8g2.print(m.mc_2p5);
+      u8g2.drawStr(0, 40, "PM10:"); // write something to the internal memory
+      u8g2.setCursor(64, 40);
+      u8g2.print(m.mc_10p0);
+      u8g2.setFont(u8g2_font_courR08_tn);
+      u8g2.setCursor(5, 64);
+      u8g2.print(gps.location.lat(), 6);
+      u8g2.print(" ");
+      u8g2.print(gps.location.lng(), 6);
+      u8g2.sendBuffer();          // transfer internal memory to the display
+      delay(1000);
       displayInfo();
     }
 
-    if (gps.time.second() % 30 == 0) {
-        String dataString;
-        dataString += String(gps.location.lat(), 6);
-        dataString += ",";
-        dataString += String(gps.location.lng(), 6);
-        dataString += ",";
-        dataString += gps.date.day();
-        dataString += "/";
-        dataString += gps.date.month();
-        dataString += "/";
-        dataString += gps.date.year();
-        dataString += ",";
-        dataString += gps.time.hour();
-        dataString += ":";
-        dataString += gps.time.minute();
-        dataString += ",";
-        dataString += m.mc_2p5;
-        dataString += ",";
-        dataString += m.mc_10p0;
-        dataString += "\r\n";
-        appendFile(SD, "/data.txt", dataString.c_str());
-        Serial.println();
-        Serial.println(dataString);
-        Serial.println();
-      
+    if (gps.time.second() % 20 == 0) {
+      String dataString;
+      dataString += String(gps.location.lat(), 6);
+      dataString += ",";
+      dataString += String(gps.location.lng(), 6);
+      dataString += ",";
+      dataString += now.day(), DEC;
+      dataString += "/";
+      dataString += now.month(), DEC;
+      dataString += "/";
+      dataString += now.year(), DEC;
+      dataString += ",";
+      dataString += now.hour(), DEC;
+      dataString += ":";
+      dataString += now.minute(), DEC;
+      dataString += ":";
+      dataString += now.second(), DEC;
+      dataString += ",";
+      dataString += m.mc_2p5;
+      dataString += ",";
+      dataString += m.mc_10p0;
+      dataString += "\r\n";
+      appendFile(SD, "/data.txt", dataString.c_str());
+      Serial.println();
+      Serial.println(dataString);
+      Serial.println();
     }
   }
 }
 
-void displayInfo()
-{
+void displayInfo()  {
   Serial.print(F("Location: "));
-  if (gps.location.isValid())
-  {
+  if (gps.location.isValid()) {
     Serial.print(gps.location.lat(), 6);
     Serial.print(F(","));
     Serial.print(gps.location.lng(), 6);
-
   }
-  else
-  {
+  else  {
     Serial.print(F("INVALID"));
   }
 
   Serial.print(F("  Date/Time: "));
-  if (gps.date.isValid())
-  {
+  if (gps.date.isValid()) {
     Serial.print(gps.date.day());
     Serial.print(F("/"));
     Serial.print(gps.date.month());
@@ -181,8 +268,7 @@ void displayInfo()
   }
 
   Serial.print(F(" "));
-  if (gps.time.isValid())
-  {
+  if (gps.time.isValid()) {
     if (gps.time.hour() < 10) Serial.print(F("0"));
     Serial.print(gps.time.hour());
     Serial.print(F(":"));
@@ -192,36 +278,20 @@ void displayInfo()
     if (gps.time.second() < 10) Serial.print(F("0"));
     Serial.print(gps.time.second());
   }
-  else
-  {
+  else  {
     Serial.print(F("INVALID"));
   }
-
   Serial.println();
 }
 
-void writeFile(fs::FS & fs, const char * path, const char * message) {
-  Serial.printf("Writing file: %s\n", path);
-
-  File file = fs.open(path, FILE_WRITE);
-  if (!file) {
-    Serial.println("Failed to open file for writing");
-    return;
-  }
-  if (file.print(message)) {
-    Serial.println("File written");
-  } else {
-    Serial.println("Write failed");
-  }
-  file.close();
-}
-
 void appendFile(fs::FS & fs, const char * path, const char * message) {
+  Serial.println();
   Serial.printf("Appending to file: %s\n", path);
 
   File file = fs.open(path, FILE_APPEND);
   if (!file) {
     Serial.println("Failed to open file for appending");
+    delay(100);
     return;
   }
   if (file.print(message)) {
