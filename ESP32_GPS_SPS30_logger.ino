@@ -72,7 +72,7 @@ unsigned long previousMillis = 0;
 void setup() {
   Serial.begin(9600);
   Serial2.begin(9600);
-  u8g2.setBusClock(100000);    // sps30 max busspeed is max 100kHz 
+  u8g2.setBusClock(100000);    // sps30 max busspeed is 100kHz 
   u8g2.begin();
   u8g2.clearBuffer();          // clear the internal memory
   u8g2.setFont(u8g2_font_courR10_tr);
