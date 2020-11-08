@@ -1,11 +1,9 @@
-
 #include <Arduino.h>
 #include "FS.h"
 #include "SD.h"
 #include "SPI.h"
 #include <TinyGPS++.h>
 #include <sps30.h>
-#include <RTClib.h>
 #include <U8g2lib.h>
 
 #ifdef U8X8_HAVE_HW_SPI
@@ -17,7 +15,7 @@
 
 TinyGPSPlus gps;
 
-RTC_DS1307 rtc;
+
 
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 #define PONTES_logo_width 61
@@ -72,9 +70,9 @@ static const unsigned char PONTES_logo_bits[] PROGMEM = {
 unsigned long previousMillis = 0;
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial2.begin(9600);
-  u8g2.setBusClock(100000);
+  u8g2.setBusClock(100000);    // sps30 max busspeed is max 100kHz 
   u8g2.begin();
   u8g2.clearBuffer();          // clear the internal memory
   u8g2.setFont(u8g2_font_courR10_tr);
@@ -82,20 +80,22 @@ void setup() {
   u8g2.drawStr(0, 28, "FIJNSTOF");
   u8g2.drawStr(8, 40, "LOGGER");
   u8g2.sendBuffer();          // transfer internal memory to the display
-  delay(5000); u8g2.clearBuffer();         // clear the internal memory
+  delay(5000);
+  u8g2.clearBuffer();         // clear the internal memory
   u8g2.setFont(u8g2_font_courR08_tr);
   u8g2.drawStr(0, 8, "Idee en realisatie:");
-  u8g2.drawStr(0, 22, "Klaas Groot");
-  u8g2.drawStr(0, 32, "Diane Robyn");
-  u8g2.drawStr(0, 42, "Jan Barten");
+  u8g2.setFont(u8g2_font_courR10_tr);
+  u8g2.drawStr(0, 30, "Klaas Groot");
+  u8g2.drawStr(0, 45, "Diane Robyn");
+  u8g2.drawStr(0, 60, "Jan Barten");
   u8g2.sendBuffer();          // transfer internal memory to the display
-  delay(5000);
+  delay(3000);
 
   // SPS30
   int16_t ret;
   uint32_t auto_clean;
   sensirion_i2c_init();
-
+  delay(10);
   while (sps30_probe() != 0) {
     Serial.println("SPS sensor probing failed");
     delay(500);
@@ -112,18 +112,6 @@ void setup() {
     Serial.print("error starting measurement\n");
   }
   Serial.print("Measurements started\n");
-
-  if (! rtc.begin()) {
-    Serial.println("Couldn't find RTC");
-    Serial.flush();
-    abort();
-  }
-
-  if (! rtc.isrunning()) {
-    Serial.println("RTC is NOT running, let's set the time!");
-    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  }
-  Serial.println("RTC ok!");
 
   if (!SD.begin()) {
     Serial.println("Card Mount Failed");
@@ -158,7 +146,6 @@ void setup() {
 }
 
 void loop() {
-  DateTime now = rtc.now();
   while (Serial2.available() > 0)
     if (gps.encode(Serial2.read()))
       if (millis() > 5000 && gps.charsProcessed() < 10) {
@@ -198,10 +185,10 @@ void loop() {
       u8g2.clearBuffer();          // clear the internal memory
       u8g2.setFont(u8g2_font_courR14_tr); // choose a suitable font
       u8g2.drawStr(0, 18, "PM2.5:"); // write something to the internal memory
-      u8g2.setCursor(64, 18);
+      u8g2.setCursor(75, 18);
       u8g2.print(m.mc_2p5);
       u8g2.drawStr(0, 40, "PM10:"); // write something to the internal memory
-      u8g2.setCursor(64, 40);
+      u8g2.setCursor(75, 40);
       u8g2.print(m.mc_10p0);
       u8g2.setFont(u8g2_font_courR08_tn);
       u8g2.setCursor(5, 64);
@@ -214,31 +201,38 @@ void loop() {
     }
 
     if (gps.time.second() % 20 == 0) {
-      String dataString;
-      dataString += String(gps.location.lat(), 6);
-      dataString += ",";
-      dataString += String(gps.location.lng(), 6);
-      dataString += ",";
-      dataString += now.day(), DEC;
-      dataString += "/";
-      dataString += now.month(), DEC;
-      dataString += "/";
-      dataString += now.year(), DEC;
-      dataString += ",";
-      dataString += now.hour(), DEC;
-      dataString += ":";
-      dataString += now.minute(), DEC;
-      dataString += ":";
-      dataString += now.second(), DEC;
-      dataString += ",";
-      dataString += m.mc_2p5;
-      dataString += ",";
-      dataString += m.mc_10p0;
-      dataString += "\r\n";
-      appendFile(SD, "/data.txt", dataString.c_str());
-      Serial.println();
-      Serial.println(dataString);
-      Serial.println();
+      if (gps.location.isValid()) {
+        String dataString;
+        dataString += String(gps.location.lat(), 6);
+        dataString += ",";
+        dataString += String(gps.location.lng(), 6);
+        dataString += ",";
+        dataString += gps.date.day();
+        dataString += "/";
+        dataString += gps.date.month();
+        dataString += "/";
+        dataString += gps.date.year();
+        dataString += ",";
+        dataString += gps.time.hour() + 1;
+        dataString += ":";
+        dataString += gps.time.minute();
+        dataString += ":";
+        dataString += gps.time.second();
+        dataString += ",";
+        dataString += m.mc_2p5;
+        dataString += ",";
+        dataString += m.mc_10p0;
+        dataString += "\r\n";           // end of record
+        appendFile(SD, "/data.txt", dataString.c_str());
+        Serial.println();
+        Serial.println(dataString);
+        Serial.println();
+        u8g2.clearBuffer();         // clear the internal memory
+        u8g2.setFont(u8g2_font_courR18_tr);
+        u8g2.drawStr(15, 40, "OPSLAAN");
+        u8g2.sendBuffer();          // transfer internal memory to the display
+        delay(400);
+      }
     }
   }
 }
@@ -270,7 +264,7 @@ void displayInfo()  {
   Serial.print(F(" "));
   if (gps.time.isValid()) {
     if (gps.time.hour() < 10) Serial.print(F("0"));
-    Serial.print(gps.time.hour());
+    Serial.print(gps.time.hour()+1);
     Serial.print(F(":"));
     if (gps.time.minute() < 10) Serial.print(F("0"));
     Serial.print(gps.time.minute());
