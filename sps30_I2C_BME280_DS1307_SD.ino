@@ -30,9 +30,10 @@ void setup() {
     // following line sets the RTC to the date & time this sketch was compiled
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
-
-  //bme.begin();        // for Adafruit or Sparkfun sensors
-  bme.begin(0x76);  // for GYBMEP sensor
+  
+  //Choose correct sensor below
+  //bme.begin();        // for Adafruit or red  Sparkfun sensors
+  bme.begin(0x76);  // for pruple GYBMEP sensor
   delay(2000);
 
   sensirion_i2c_init();
@@ -144,6 +145,9 @@ void loop() {
 
   // logging happens here every minute
   if (seconds == 0 && logFlag == true) {
+  
+  // choose line below for 1 second interval
+  //if (logFlag == true) {
     File dataFile = SD.open("pmlog.txt", FILE_WRITE);
 
     // if the file is available, write to it:
