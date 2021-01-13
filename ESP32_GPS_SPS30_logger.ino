@@ -2,7 +2,7 @@
 #include "FS.h"
 #include "SD.h"
 #include "SPI.h"
-#include <TinyGPS++.h>
+#include <TinyGPS++.h>  //For Wemos R32  GPS TX --> pin 5  GPS RX --> A4
 #include <sps30.h>
 #include <U8g2lib.h>
 
